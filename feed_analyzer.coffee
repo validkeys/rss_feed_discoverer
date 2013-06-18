@@ -1,4 +1,6 @@
 cheerio = require('cheerio')
+imageInfo = require('imageinfo')
+request = require('request')
 urlNormalizer = require('./url_normalizer')()
 
 module.exports = class FeedAnalyzer
@@ -14,31 +16,64 @@ module.exports = class FeedAnalyzer
     averageCharsPerItem = @averageCharsPerItem $
     images = @getImagesOf $
     
-    properties = {
-      url: @url,
-      numberOfItems: @itemNodesOf($).length,
-      averageCharsPerItem: averageCharsPerItem,
-      fullFeed: (averageCharsPerItem > 500),
-      imageCount: images.length,
-      pixelCount: @pixelCount $,
-      averageImageSize: @averageImageSize($),
-      youTubeEmbeds: @embeds($, 'youtube.com'),
-      vimeoEmbeds: @embeds($, 'vimeo.com'),
-      vineEmbeds: @embeds($, 'vine.co')
-    }
+    @pixelCount images, (totalPixelCount) =>
+      averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
+      
+      if isNaN(averageImageDimension)
+        averageImageDimension = 0
+        
+      properties = {
+        url: @url,
+        numberOfItems: @itemNodesOf($).length,
+        averageCharsPerItem: averageCharsPerItem,
+        fullFeed: (averageCharsPerItem > 500),
+        imageCount: images.length,
+        pixelCount: totalPixelCount,
+        averageImageSize: averageImageDimension,
+        youTubeEmbeds: @embeds($, 'youtube.com'),
+        vimeoEmbeds: @embeds($, 'vimeo.com'),
+        vineEmbeds: @embeds($, 'vine.co')
+      }
     
-    callback(properties)
+      callback(properties)
   
   averageCharsPerItem: ($) ->
     contentNodes = @contentNodesOf $
     Math.round(contentNodes.text().length / contentNodes.length)
   
-  pixelCount: ($) ->
-    "Not yet implemented."
-  
-  averageImageSize: ($) ->
-    "Not yet implemented."
+  pixelCount: (images, done) ->
+    results = []
     
+    # if there are no images return a pixel count of zero immediately
+    if images.length is 0
+      done(0)
+    
+    pushResult = (pixelCount) ->
+      results.push pixelCount
+      console.log "Pushed #{pixelCount}"
+      if results.length is images.length
+        totalPixelCount = results.reduce (memo, p) ->
+          if isNaN(p) then p = 0
+          return memo + p
+        , 0
+        console.log("Calling done with #{totalPixelCount}")
+        done(totalPixelCount)
+    
+    for image in images
+      request( {
+        uri: image.attribs.src
+        encoding: null
+      }, (e, r, data) =>
+        try
+          info = imageInfo(data)
+          imageSize = (info.width || 1) * (info.height || 1)
+          console.log "IMAGE SIZE: #{imageSize}"
+          pushResult imageSize
+          
+        catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
+          console.log "EXCEPTION: " + e
+      )
+  
   embeds: ($, domain) ->
     "Not yet implemented."
     

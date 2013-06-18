@@ -1,0 +1,4 @@
+http://techcrunch.com/feed/
+http://rss.cbc.ca/lineup/canada.xml
+http://www.thestar.com/feeds.topstories.rss
+http://mashable.com/feed/

@@ -9,15 +9,13 @@ module.exports = ->
     data = null
     response = null
     http.request(url, (res) ->
-      console.log('got response')
       response = res
+      
       res.on('data', (chunk) ->
-        console.log('data')
         data += chunk
       )
       
       res.on('end', ->
-        console.log('end!!')
         xml = true # TODO - actually determine if it's XML or not.
         
         if xml

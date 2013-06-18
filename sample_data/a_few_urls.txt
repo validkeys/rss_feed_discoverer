@@ -1,0 +1,8 @@
+http://google.com/
+http://techcrunch.com/
+http://microsoft.com/
+http://nodejs.org/
+http://amazon.com/
+http://espn.com/
+http://cbc.ca/
+http://thestar.com/

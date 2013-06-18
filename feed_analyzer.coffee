@@ -8,7 +8,7 @@ module.exports = class FeedAnalyzer
   
   process: (callback) ->
     console.log "--> Processing feed: #{@url}"
-    $ = cheerio.load(@xml)
+    $ = cheerio.load(@xml, {xmlMode: true})
     
     averageCharsPerItem = @averageCharsPerItem($)
     
@@ -16,7 +16,7 @@ module.exports = class FeedAnalyzer
       url: @url,
       numberOfItems: @itemNodesOf($).length,
       averageCharsPerItem: averageCharsPerItem,
-      fullFeed: (averageCharsPerItem > 5000),
+      fullFeed: (averageCharsPerItem > 500),
       imageCount: @imageCount($),
       pixelCount: @pixelCount($),
       averageImageSize: @averageImageSize($),
@@ -28,7 +28,8 @@ module.exports = class FeedAnalyzer
     callback(properties)
   
   averageCharsPerItem: ($) ->
-    "Not yet implemented."
+    contentNodes = @contentNodesOf $
+    Math.round(contentNodes.text().length / contentNodes.length)
     
   imageCount: ($) ->
     "Not yet implemented."
@@ -41,10 +42,10 @@ module.exports = class FeedAnalyzer
     
   embeds: ($, domain) ->
     "Not yet implemented."
-  
+    
   
   itemNodesOf: ($) ->
-    return $("item, atom\\:entry, entry")
-  
+    return $("item, entry")
+
   contentNodesOf: ($) ->
-    return $("content\\:encoded, atom\\:summary, description, atom\\:content, summary, content")
+    return $("encoded, summary, description, content")

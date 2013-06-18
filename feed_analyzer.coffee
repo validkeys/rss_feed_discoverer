@@ -31,9 +31,9 @@ module.exports = class FeedAnalyzer
         pixelCount: totalPixelCount,
         averageImageSize: averageImageDimension,
         hasDates: @pubDatesOf($).length > 0,
-        youTubeEmbeds: @embeds($, 'youtube.com'),
-        vimeoEmbeds: @embeds($, 'vimeo.com'),
-        vineEmbeds: @embeds($, 'vine.co'),
+        youTubeEmbeds: @embedsOf($, 'youtube.com').length > 0,
+        vimeoEmbeds: @embedsOf($, 'vimeo.com').length > 0,
+        vineEmbeds: @embedsOf($, 'vine.co').length > 0,
         atomOrRSS: @atomOrRSS($)
       }
     
@@ -74,8 +74,8 @@ module.exports = class FeedAnalyzer
           console.log "EXCEPTION: " + e
       )
   
-  embeds: ($, domain) ->
-    "Not yet implemented."
+  embedsOf: ($, domain) ->
+    return @findElementsInContent($, "iframe[src*='" + domain + "'], embed[src*='" + domain + "'], script[src*='" + domain + "']")
       
   getImagesOf: ($) ->
     imagesInItems = @findElementsInContent($, "img")

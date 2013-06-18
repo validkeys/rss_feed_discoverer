@@ -1,6 +1,6 @@
 http = require('follow-redirects').http
 fs = require 'fs'
-URL = require 'url'
+dispatcher = require('./link_dispatcher')()
 
 filename = process.argv[2]
 
@@ -9,11 +9,7 @@ if filename?
       urls = data.split('\n')
       
       for url in urls
-        http.request(url, (res) ->
-          console.log JSON.stringify(res.headers)
-        ).on('error', (e) ->
-          console.log e
-        ).end()
+        dispatcher.get url
     )
 else
   console.log "ERROR: please provide a file to read URLs from."

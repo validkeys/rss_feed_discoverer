@@ -12,7 +12,7 @@ module.exports = ->
     http.request(url, (res) =>
       response = res
       
-      res.on('data', (chunk) ->
+      res.on('data', (chunk) =>
         data += chunk
       )
       
@@ -34,9 +34,9 @@ module.exports = ->
     
     if res.headers['Content-Type'] is "text/xml" then yes
     else if res.headers['Content-Type'] is "application/rss+xml" then yes
-    else if $("rss") then yes
-    else if $("feed") then yes
-    else if data.indexOf("<?xml") <= 10 then yes
+    else if $("rss").length > 0 then yes
+    else if $("feed").length > 0 then yes
+    else if 0 <= data.indexOf("<?xml") <= 10 then yes
     else if url.substring(url.length - 4) is ".xml" then yes
     else if url.substring(url.length - 4) is ".rss" then yes
     else if url.substring(url.length - 5) is ".atom" then yes

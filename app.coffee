@@ -17,16 +17,18 @@ if filename?
       
       for url in Object.keys process.urls
         dispatcher.get url, (properties) ->
-          delete process.urls[properties.url]
+          if properties?
+            delete process.urls[properties.url]
           
-          if !csv?
-            csv = Object.keys(properties).join(',') + '\n'
+            if !csv?
+              csv = Object.keys(properties).join(',') + '\n'
           
-          csv += Object.keys(properties).map((key) ->
-            properties[key]
-          ).join(',') + '\n'    
+            csv += Object.keys(properties).map((key) ->
+              properties[key]
+            ).join(',') + '\n'    
           
-          console.log JSON.stringify(properties)
+            console.log JSON.stringify(properties)
+            
           if Object.keys(process.urls).length is 0
             file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"
             fs.writeFile(file, csv, (err) ->

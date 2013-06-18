@@ -1,3 +1,5 @@
+cheerio = require('cheerio')
+
 module.exports = class PageAnalyzer
   constructor: (url, response, html) ->
     @url = url
@@ -8,8 +10,23 @@ module.exports = class PageAnalyzer
     console.log "--> Processing HTML: #{@url}"
     console.log("Not yet implemented.")
     
-    properties = {
-      url: @url
-    }
+    $ = cheerio.load(@html)
     
-    callback(properties)
+    @checkForLinkTag $
+    
+    callback({})
+  
+  checkForLinkTag: ($) ->
+    tags = $("link[rel='alternate'][type='application/rss+xml'], link[rel='alternate'][type='application/atom+xml']")
+    
+    for tag in tags
+      console.log("Queuing up #{tag.attribs.href}.")
+      @processURL(tag.attribs.href)
+  
+  
+  
+  # Yuck. I'm just going to leave this atrocity at the very bottom of this file.
+  processURL: (urlToProcess) ->
+    process.urls[urlToProcess] = true
+  
+  

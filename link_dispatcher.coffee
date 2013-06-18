@@ -17,6 +17,7 @@ module.exports = ->
       )
       
       res.on('end', ->
+        console.log('end!!')
         xml = true # TODO - actually determine if it's XML or not.
         
         if xml

@@ -6,3 +6,8 @@ module.exports = class FeedAnalyzer
   
   process: (callback) ->
     console.log("Processing feed!")
+    properties = {
+      url: @url
+    }
+    
+    callback(properties)

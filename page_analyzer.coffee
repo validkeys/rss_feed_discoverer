@@ -6,3 +6,9 @@ module.exports = class PageAnalyzer
     
   process: (callback) ->
     console.log("Processing page!")
+    
+    properties = {
+      url: @url
+    }
+    
+    callback(properties)

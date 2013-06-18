@@ -27,6 +27,6 @@ module.exports = class PageAnalyzer
   
   # Yuck. I'm just going to leave this atrocity at the very bottom of this file.
   processURL: (urlToProcess) ->
-    process.urls[urlToProcess] = true
+    process.urlsToProcess[urlToProcess] = true
   
   

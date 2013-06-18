@@ -5,6 +5,7 @@ module.exports = class PageAnalyzer
     @html = html
     
   process: (callback) ->
+    console.log "--> Processing HTML: #{@url}"
     console.log("Not yet implemented.")
     
     properties = {

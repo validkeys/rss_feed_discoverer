@@ -30,9 +30,11 @@ module.exports = class FeedAnalyzer
         imageCount: images.length,
         pixelCount: totalPixelCount,
         averageImageSize: averageImageDimension,
+        hasDates: @pubDatesOf($).length > 0,
         youTubeEmbeds: @embeds($, 'youtube.com'),
         vimeoEmbeds: @embeds($, 'vimeo.com'),
-        vineEmbeds: @embeds($, 'vine.co')
+        vineEmbeds: @embeds($, 'vine.co'),
+        atomOrRSS: @atomOrRSS($)
       }
     
       callback(properties)
@@ -50,13 +52,11 @@ module.exports = class FeedAnalyzer
     
     pushResult = (pixelCount) ->
       results.push pixelCount
-      console.log "Pushed #{pixelCount}"
       if results.length is images.length
         totalPixelCount = results.reduce (memo, p) ->
           if isNaN(p) then p = 0
           return memo + p
         , 0
-        console.log("Calling done with #{totalPixelCount}")
         done(totalPixelCount)
     
     for image in images
@@ -67,7 +67,7 @@ module.exports = class FeedAnalyzer
         try
           info = imageInfo(data)
           imageSize = (info.width || 1) * (info.height || 1)
-          console.log "IMAGE SIZE: #{imageSize}"
+          console.log "[image size] (#{image.attribs.src}): #{info.width || 1} x #{info.height || 1} = #{imageSize}"
           pushResult imageSize
           
         catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
@@ -76,7 +76,7 @@ module.exports = class FeedAnalyzer
   
   embeds: ($, domain) ->
     "Not yet implemented."
-    
+      
   getImagesOf: ($) ->
     imagesInItems = @findElementsInContent($, "img")
     
@@ -117,3 +117,11 @@ module.exports = class FeedAnalyzer
 
   contentNodesOf: ($) ->
     return $("encoded, summary, description, content")
+  
+  pubDatesOf: ($) ->
+    return $("pubDate, published, updated")  
+  
+  atomOrRSS: ($) ->
+    if $("rss") then "RSS"
+    else if $("feed") then "Atom"
+    else false

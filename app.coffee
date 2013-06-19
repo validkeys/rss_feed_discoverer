@@ -1,17 +1,28 @@
 http = require('follow-redirects').http
+exec = require('child_process').exec
 fs = require('fs')
 dispatcher = require('./link_dispatcher')()
+opts = require('nomnom')
+  .option('open', {
+    abbr: 'o',
+    flag: true,
+    help: 'Opens the CSV when done.'
+  })
+  .option('no-images', {
+    abbr: 'i',
+    flag: true,
+    help: 'Skips fetching images from feeds.'
+  }).parse();
 
 # Simultaneous request limit for pages and feeds.
 # At most one image request will occur per feed at once.
 SIMULTANEOUS_PAGE_REQUEST_LIMIT = 5
 
 # Limit the number of pages we'll pass through before stopping (on each path).
-process.MAX_DEPTH = 5
+process.MAX_DEPTH = 3
 
 filename = process.argv[2]
 csv = null
-    
 
 if filename?
   fs.readFile(filename, 'utf8', (err, data) ->
@@ -72,5 +83,8 @@ saveAsCSV = ->
       process.exit(1)
     else
       console.log "All done. The results were saved into #{file}."
+      if opts.open?
+        console.log "Opening #{file}..."
+        exec("open #{file}")
       process.exit(0)
   )

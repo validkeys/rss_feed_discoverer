@@ -2,6 +2,7 @@ cheerio = require('cheerio')
 imageInfo = require('imageinfo')
 request = require('request')
 urlNormalizer = require('./url_normalizer')()
+opts = require('nomnom').parse();
 
 module.exports = class FeedAnalyzer
   constructor: (url, depth, response, xml) ->
@@ -47,50 +48,50 @@ module.exports = class FeedAnalyzer
   pixelCount: (images, done) ->
     results = []
     # if there are no images return a pixel count of zero immediately
-    if images.length is 0
+    if images.length is 0 or opts['images'] is false
       done(0)
+    else
+      # copy images array
+      imagesRemaining = images.concat([])
     
-    # copy images array
-    imagesRemaining = images.concat([])
+      pushResult = (pixelCount) ->
+        results.push pixelCount
+        if results.length is images.length
+          totalPixelCount = results.reduce (memo, p) ->
+            if isNaN(p) then p = 0
+            return memo + p
+          , 0
+          done(totalPixelCount)
     
-    pushResult = (pixelCount) ->
-      results.push pixelCount
-      if results.length is images.length
-        totalPixelCount = results.reduce (memo, p) ->
-          if isNaN(p) then p = 0
-          return memo + p
-        , 0
-        done(totalPixelCount)
-    
-    processImage = (image) ->
-      imageURL = image.attribs.src || image.attribs.url
-      if imageURL?
-        console.log "GET #{imageURL} [image size]"
+      processImage = (image) ->
+        imageURL = image.attribs.src || image.attribs.url
+        if imageURL?
+          console.log "GET #{imageURL} [image size]"
         
-        request({
-          uri: imageURL
-          encoding: null
-        }, (e, r, data) =>
-          try
-            if e?
-              console.log "REQUEST ERROR: #{e}"
-              pushResult 0
-            else
-              info = imageInfo(data)
-              imageSize = (info.width || 1) * (info.height || 1)
-              pushResult imageSize
+          request({
+            uri: imageURL
+            encoding: null
+          }, (e, r, data) =>
+            try
+              if e?
+                console.log "REQUEST ERROR: #{e}"
+                pushResult 0
+              else
+                info = imageInfo(data)
+                imageSize = (info.width || 1) * (info.height || 1)
+                pushResult imageSize
           
-          catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
-            console.log "EXCEPTION: " + e
-            pushResult 0
+            catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
+              console.log "EXCEPTION: " + e
+              pushResult 0
         
+            processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
+          )
+        else
+          pushResult 0
           processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
-        )
-      else
-        pushResult 0
-        processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
     
-    processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
+      processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
 
   
   embedsOf: ($, domain) ->

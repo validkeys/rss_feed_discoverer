@@ -71,7 +71,11 @@ module.exports = class PageAnalyzer
       "a[href*='feed']",
     ].join(', ')
     
-    $(selectors).each (index, element) =>
+    
+    # Insane limit: make sure we only queue up at most 75 links per page.
+    # It'd be nice if this could be lower, but a lot of sites have a whole page
+    # full of RSS feed links, so we don't want to exclude any of those.
+    $(selectors).filter((i, el) -> return i < 75).each (index, element) =>
       @processURL(urlNormalizer.getNormalizedURL(@url, element.attribs.href))
   
   

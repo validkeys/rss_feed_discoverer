@@ -18,10 +18,13 @@ module.exports = class PageAnalyzer
     if @response.statusCode >= 400
       callback({})
     else
-      @checkForLinkTag $
-      @queueCommonFeedURLs()
-      @queuePotentialFeedLinks $
-      
+      # Ignore this page if we've hit our max depth.
+      # When depth == MAX_DEPTH, we only care about processing feeds.
+      if @depth <= process.MAX_DEPTH
+        @checkForLinkTag $
+        @queueCommonFeedURLs()
+        @queuePotentialFeedLinks $
+
       callback({})
   
   # Checks for the RSS HTML tag, like many web browsers do.
@@ -38,7 +41,8 @@ module.exports = class PageAnalyzer
     
     paths = [
       "/rss",
-      "/feed"
+      "/feed",
+      "/blog"
     ]
     
     for path in paths
@@ -53,6 +57,13 @@ module.exports = class PageAnalyzer
       "a[href*='xml']",
       "a[href*='rss']",
       
+      # Blog pages, etc are more likely to contain RSS feed links.
+      "a:contains('Blog')",
+      "a:contains('Feed')",
+      "a:contains('RSS')",
+      "a:contains('XML')",
+      "a:contains('News')"
+
       # Catches all FeedBurner URLs in addition to pages containing links to feeds.
       # I've seen FeedBurner use these domains:
       #   feeds.feedburner.com

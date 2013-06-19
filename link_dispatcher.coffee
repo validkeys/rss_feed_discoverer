@@ -58,7 +58,8 @@ module.exports = ->
     ]
     
     blockedKeywords = [
-      "comments"
+      "comments",
+      "forum"
     ]
     
     for domain in blockedDomains

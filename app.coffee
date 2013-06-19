@@ -17,7 +17,7 @@ if filename?
   fs.readFile(filename, 'utf8', (err, data) ->
     csv = null
     
-    # DIRTY HACK: make urls a global map
+    # DIRTY HACK: use globals to keep track of progress of URL processing
     urls = data.split('\n')
     process.urlsToProcess = {}
     process.urlsInProgress = {}

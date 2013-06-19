@@ -3,16 +3,17 @@ module.exports = ->
   getNormalizedURL: (siteURL, urlToNormalize) ->
     result = urlToNormalize
     # Attempt to tidy up the URL to normalize if it appears to not be a full URI
-    if urlToNormalize.indexOf("http:") isnt 0 and urlToNormalize.indexOf("https:") isnt 0 and urlToNormalize.indexOf("data:") isnt 0
-      if urlToNormalize[0] is "/" and urlToNormalize[1] isnt "/"
-        # absolute on server
-        result = @pruneURLToBase(siteURL) + urlToNormalize
-      else if urlToNormalize[0] is "/" and urlToNormalize[1] is "/"
-        # they want us to pick the protocol, so we'll just always pick HTTP.
-        result = "http:" + urlToNormalize
-      else
-        # relative to nearest "path". Chop off "blah.html" if we're at /blah.html, or "ccc" if we're at /aaa/ccc
-        result = @pruneURLToNearestPath(siteURL) + "/" + urlToNormalize;
+    if urlToNormalize?
+      if urlToNormalize.indexOf("http:") isnt 0 and urlToNormalize.indexOf("https:") isnt 0 and urlToNormalize.indexOf("data:") isnt 0
+        if urlToNormalize[0] is "/" and urlToNormalize[1] isnt "/"
+          # absolute on server
+          result = @pruneURLToBase(siteURL) + urlToNormalize
+        else if urlToNormalize[0] is "/" and urlToNormalize[1] is "/"
+          # they want us to pick the protocol, so we'll just always pick HTTP.
+          result = "http:" + urlToNormalize
+        else
+          # relative to nearest "path". Chop off "blah.html" if we're at /blah.html, or "ccc" if we're at /aaa/ccc
+          result = @pruneURLToNearestPath(siteURL) + "/" + urlToNormalize;
     result
 
   pruneURLToBase: (url) ->

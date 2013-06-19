@@ -4,6 +4,9 @@ dispatcher = require('./link_dispatcher')()
 
 SIMULTANEOUS_REQUEST_LIMIT = 15
 
+# Limit the number of pages we'll pass through before stopping (on each path).
+process.MAX_DEPTH = 5
+
 filename = process.argv[2]
 csv = null
     
@@ -19,7 +22,7 @@ if filename?
     process.urlResults = {}
     
     for url in urls
-      process.urlsToProcess[url] = true
+      process.urlsToProcess[url] = { depth: 0 }
     
     for i in [1..SIMULTANEOUS_REQUEST_LIMIT]
       processNextURL()
@@ -32,22 +35,25 @@ processNextURL = ->
   urls = Object.keys(process.urlsToProcess)
   if urls.length > 0
     url = urls[0]
+    process.urlsInProgress[url] = { depth: process.urlsToProcess[url].depth }
     delete process.urlsToProcess[url]
-    process.urlsInProgress[url] = true
   
-    dispatcher.get(url, (properties) =>
+    dispatcher.get(url, process.urlsInProgress[url].depth, (properties) =>
+      process.urlResults[url] = properties
+      process.urlResults[url].depth = process.urlsInProgress[url].depth
       delete process.urlsInProgress[url]
+      
       processNextURL()
       
-      process.urlResults[url] = properties
-      
-      if Object.keys(process.urlsToProcess).length is 0 and Object.keys(process.urlsInProgress).length is 0
+      if Object.keys(process.urlsToProcess).length is 0 and Object.keys(process.urlsInProgress).length is 0 and not process.saving?
         saveAsCSV()
     )
 
 saveAsCSV = ->
+  process.saving = true
+
   for properties in Object.keys(process.urlResults)
-    if Object.keys(process.urlResults[properties]).length > 0
+    if Object.keys(process.urlResults[properties]).length > 1
       if !csv?
         csv = Object.keys(process.urlResults[properties]).join(',') + '\n'
 

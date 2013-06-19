@@ -3,8 +3,9 @@ URL = require('url')
 urlNormalizer = require('./url_normalizer')()
 
 module.exports = class PageAnalyzer
-  constructor: (url, response, html) ->
+  constructor: (url, depth, response, html) ->
     @url = url
+    @depth = depth
     @response = response
     @html = html
     
@@ -70,5 +71,5 @@ module.exports = class PageAnalyzer
     if process.urlResults[urlToProcess]? or process.urlsInProgress[urlToProcess]?
       console.log "Skipped (already processed or in queue): #{urlToProcess}"
     else
-      console.log("Queued: #{urlToProcess}.")
-      process.urlsToProcess[urlToProcess] = true
+      console.log("Queued: #{urlToProcess} with depth #{@depth + 1}.")
+      process.urlsToProcess[urlToProcess] = { depth: @depth + 1 }

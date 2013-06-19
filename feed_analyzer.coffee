@@ -4,8 +4,9 @@ request = require('request')
 urlNormalizer = require('./url_normalizer')()
 
 module.exports = class FeedAnalyzer
-  constructor: (url, response, xml) ->
+  constructor: (url, depth, response, xml) ->
     @url = url
+    @depth = depth
     @response = response
     @xml = xml
   

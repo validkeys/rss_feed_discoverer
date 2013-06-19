@@ -6,9 +6,9 @@ FeedAnalyzer = require("./feed_analyzer")
 PageAnalyzer = require("./page_analyzer")
 
 module.exports = ->
-  get: (url, callback) ->
+  get: (url, depth, callback) ->
     url = url.trim()
-    if url.length > 0
+    if url.length > 0 and depth <= process.MAX_DEPTH
       response = null
       options = {
         uri: url
@@ -26,9 +26,9 @@ module.exports = ->
           xml = @isXML(url, response, data)
       
           if xml
-            new FeedAnalyzer(url, response, data).process(callback)
+            new FeedAnalyzer(url, depth, response, data).process(callback)
           else
-            new PageAnalyzer(url, response, data).process(callback)
+            new PageAnalyzer(url, depth, response, data).process(callback)
       )
     else
       callback({})

@@ -2,7 +2,18 @@ cheerio = require('cheerio')
 imageInfo = require('imageinfo')
 request = require('request')
 urlNormalizer = require('./url_normalizer')()
-opts = require('nomnom').parse();
+opts = require('nomnom').options({
+  open: {
+    abbr: 'o',
+    flag: true,
+    help: 'Opens the CSV when done.'
+  },
+  'no-images': {
+    abbr: 'i',
+    flag: true,
+    help: 'Skips fetching images from feeds.'
+  }
+}).nom();
 
 module.exports = class FeedAnalyzer
   constructor: (url, depth, response, xml) ->
@@ -26,6 +37,7 @@ module.exports = class FeedAnalyzer
         
       properties = {
         url: @url,
+        title: @titleOf($),
         numberOfItems: @itemNodesOf($).length,
         averageCharsPerItem: averageCharsPerItem,
         fullFeed: (averageCharsPerItem > 500),
@@ -36,7 +48,9 @@ module.exports = class FeedAnalyzer
         youTubeEmbeds: @embedsOf($, 'youtube.com').length > 0,
         vimeoEmbeds: @embedsOf($, 'vimeo.com').length > 0,
         vineEmbeds: @embedsOf($, 'vine.co').length > 0,
-        atomOrRSS: @atomOrRSS($)
+        atomOrRSS: @atomOrRSS($),
+        firstDate: @date($, false),
+        lastDate: @date($, true),
       }
     
       callback(properties)
@@ -93,6 +107,12 @@ module.exports = class FeedAnalyzer
     
       processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
 
+  titleOf: ($) ->
+    titleNodes = $("title")
+    if titleNodes?
+      return titleNodes.first().text()
+    else
+      return false
   
   embedsOf: ($, domain) ->
     return @findElementsInContent($, "iframe[src*='" + domain + "'], embed[src*='" + domain + "'], script[src*='" + domain + "']")
@@ -123,6 +143,14 @@ module.exports = class FeedAnalyzer
       $(enclosures[i]).attr("url", normalized)
 
     return imagesInItems.concat(enclosures)
+  
+  date: ($, last) ->
+    itemNodes = @itemNodesOf($)
+    
+    if last
+      return itemNodes.last().find("pubDate, published, updated").text()
+    else
+      return itemNodes.first().find("pubDate, published, updated").text()
   
   findElementsInContent: ($, selector) ->
     return @contentNodesOf($).toArray().map((contentNode) ->

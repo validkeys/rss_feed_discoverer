@@ -2,17 +2,18 @@ http = require('follow-redirects').http
 exec = require('child_process').exec
 fs = require('fs')
 dispatcher = require('./link_dispatcher')()
-opts = require('nomnom')
-  .option('open', {
+opts = require('nomnom').options({
+  open: {
     abbr: 'o',
     flag: true,
     help: 'Opens the CSV when done.'
-  })
-  .option('no-images', {
+  },
+  'no-images': {
     abbr: 'i',
     flag: true,
     help: 'Skips fetching images from feeds.'
-  }).parse();
+  }
+}).nom();
 
 # Simultaneous request limit for pages and feeds.
 # At most one image request will occur per feed at once.
@@ -71,7 +72,10 @@ saveAsCSV = ->
         csv = Object.keys(process.urlResults[properties]).join(',') + '\n'
 
       csv += Object.keys(process.urlResults[properties]).map((key) ->
-        process.urlResults[properties][key]
+        if typeof process.urlResults[properties][key] is "string"
+          process.urlResults[properties][key].replace(/[,\n]/g, " ")
+        else
+          process.urlResults[properties][key]
       ).join(',') + '\n'
   
   file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"

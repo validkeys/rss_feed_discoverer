@@ -6,14 +6,26 @@ opts = require('nomnom').options({
   open: {
     abbr: 'o',
     flag: true,
+    default: false,
     help: 'Opens the CSV when done.'
   },
   'no-images': {
     abbr: 'i',
     flag: true,
+    default: false
     help: 'Skips fetching images from feeds.'
-  }
+  },
+  'concurrency': {
+    abbr: 'c',
+    default: 5,
+    help: 'Set the number of pages/feeds we load simultaneously.',
+  },
+  'depth': {
+    abbr: 'd',
+    default: 3,
+    help: 'Set how deep of a chain (maximum) we follow before giving up.'}
 }).nom();
+
 
 module.exports = class FeedAnalyzer
   constructor: (url, depth, response, xml) ->

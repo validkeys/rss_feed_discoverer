@@ -57,7 +57,9 @@ module.exports = ->
     blockedDomains = [
       "feedly.com",
       "feedreader.com",
-      "icopyright.net"
+      "icopyright.net",
+      "add.my.yahoo.com",
+      "fusion.google.com"
     ]
     
     blockedKeywords = [

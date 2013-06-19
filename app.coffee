@@ -6,24 +6,42 @@ opts = require('nomnom').options({
   open: {
     abbr: 'o',
     flag: true,
+    default: false,
     help: 'Opens the CSV when done.'
   },
   'no-images': {
     abbr: 'i',
     flag: true,
     help: 'Skips fetching images from feeds.'
+  },
+  concurrency: {
+    abbr: 'c',
+    default: 5,
+    help: 'Set the number of pages/feeds we load simultaneously.',
+  },
+  depth: {
+    abbr: 'd',
+    default: 3,
+    help: 'Set how deep of a chain (maximum) we follow before giving up.'
   }
 }).nom();
 
+opts.images = true if !opts.images?
+
 # Simultaneous request limit for pages and feeds.
 # At most one image request will occur per feed at once.
-SIMULTANEOUS_PAGE_REQUEST_LIMIT = 5
+SIMULTANEOUS_PAGE_REQUEST_LIMIT = opts.concurrency
 
 # Limit the number of pages we'll pass through before stopping (on each path).
-process.MAX_DEPTH = 3
+process.MAX_DEPTH = opts.depth
 
 filename = process.argv[2]
 csv = null
+
+console.log "---------------------------------------------------------------"
+console.log "Starting crawler with URLs from #{filename}..."
+console.log "Max depth: #{process.MAX_DEPTH}, concurrency: #{SIMULTANEOUS_PAGE_REQUEST_LIMIT}, fetching images: #{opts.images}."
+console.log "---------------------------------------------------------------"
 
 if filename?
   fs.readFile(filename, 'utf8', (err, data) ->
@@ -95,7 +113,7 @@ saveAsCSV = ->
       process.exit(1)
     else
       console.log "All done. The results were saved into #{file}."
-      if opts.open?
+      if opts.open
         console.log "Opening #{file}..."
         exec("open #{file}")
       process.exit(0)

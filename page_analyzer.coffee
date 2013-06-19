@@ -78,6 +78,7 @@ module.exports = class PageAnalyzer
   
   # Yuck. I'm just going to leave this atrocity at the very bottom of this file.
   processURL: (urlToProcess) ->
+    console.log "urls to process = #{Object.keys(process.urlsToProcess).length}, in progress = #{Object.keys(process.urlsInProgress).length}"
     if process.urlResults[urlToProcess]? or process.urlsInProgress[urlToProcess]?
       console.log "Skipped (already processed or in queue): #{urlToProcess}"
     else

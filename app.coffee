@@ -2,7 +2,9 @@ http = require('follow-redirects').http
 fs = require('fs')
 dispatcher = require('./link_dispatcher')()
 
-SIMULTANEOUS_REQUEST_LIMIT = 15
+# Simultaneous request limit for pages and feeds.
+# Currently, all image requests for a feed are fired at once (TODO).
+SIMULTANEOUS_PAGE_REQUEST_LIMIT = 5
 
 # Limit the number of pages we'll pass through before stopping (on each path).
 process.MAX_DEPTH = 5
@@ -24,7 +26,7 @@ if filename?
     for url in urls
       process.urlsToProcess[url] = { depth: 0 }
     
-    for i in [1..SIMULTANEOUS_REQUEST_LIMIT]
+    for i in [1..SIMULTANEOUS_PAGE_REQUEST_LIMIT]
       processNextURL()
   )
 else

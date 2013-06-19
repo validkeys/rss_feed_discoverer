@@ -1,5 +1,6 @@
 request = require('request')
 cheerio = require('cheerio')
+URL = require('url')
 # TODO - handle https links properly too
 
 FeedAnalyzer = require("./feed_analyzer")
@@ -8,7 +9,7 @@ PageAnalyzer = require("./page_analyzer")
 module.exports = ->
   get: (url, depth, callback) ->
     url = url.trim()
-    if url.length > 0 and depth <= process.MAX_DEPTH
+    if url.length > 0 and depth <= process.MAX_DEPTH and not @blocked(url)
       response = null
       options = {
         uri: url
@@ -18,13 +19,14 @@ module.exports = ->
         ]
       }
     
+      console.log "GET #{url} [page or feed]"
       request(options, (err, response, data) =>
         if err?
           console.log "ERROR: #{err}"
           callback({})
         else
           xml = @isXML(url, response, data)
-      
+    
           if xml
             new FeedAnalyzer(url, depth, response, data).process(callback)
           else
@@ -46,3 +48,24 @@ module.exports = ->
     else if url.substring(url.length - 4) is ".rss" then yes
     else if url.substring(url.length - 5) is ".atom" then yes
     else no
+  
+  # Prevent common false-positives.
+  blocked: (url) ->
+    parsedURL = URL.parse(url)
+    
+    blockedDomains = [
+      "feedly.com"
+    ]
+    
+    blockedKeywords = [
+      "comments"
+    ]
+    
+    for domain in blockedDomains
+      if parsedURL.hostname? and parsedURL.hostname.indexOf(domain) isnt -1
+        return true
+    
+    for keyword in blockedKeywords
+      return true if url.indexOf(keyword) isnt -1
+  
+    false

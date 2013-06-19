@@ -61,6 +61,7 @@ module.exports = class FeedAnalyzer
         done(totalPixelCount)
     
     for image in images
+      console.log "GET #{image.attribs.src} [image size]"
       request({
         uri: image.attribs.src
         encoding: null
@@ -68,7 +69,6 @@ module.exports = class FeedAnalyzer
         try
           info = imageInfo(data)
           imageSize = (info.width || 1) * (info.height || 1)
-          console.log "[image size] (#{image.attribs.src}): #{info.width || 1} x #{info.height || 1} = #{imageSize}"
           pushResult imageSize
           
         catch e # tried looking up info for something that wasn't an image (or something else crazy happened)

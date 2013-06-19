@@ -60,7 +60,7 @@ module.exports = class FeedAnalyzer
         done(totalPixelCount)
     
     for image in images
-      request( {
+      request({
         uri: image.attribs.src
         encoding: null
       }, (e, r, data) =>
@@ -72,6 +72,7 @@ module.exports = class FeedAnalyzer
           
         catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
           console.log "EXCEPTION: " + e
+          pushResult 0
       )
   
   embedsOf: ($, domain) ->

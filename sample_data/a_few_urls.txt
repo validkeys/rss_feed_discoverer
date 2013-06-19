@@ -6,3 +6,9 @@ http://amazon.com/
 http://espn.com/
 http://cbc.ca/
 http://thestar.com/
+http://hubspot.com/
+http://readwriteweb.com/
+http://canada.com/
+http://intel.com/
+http://apple.com/
+http://dell.ca/

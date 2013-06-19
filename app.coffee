@@ -16,6 +16,7 @@ if filename?
     urls = data.split('\n')
     process.urlsToProcess = {}
     process.urlsInProgress = {}
+    process.urlResults = {}
     
     for url in urls
       process.urlsToProcess[url] = true
@@ -38,26 +39,30 @@ processNextURL = ->
       delete process.urlsInProgress[url]
       processNextURL()
       
-      if Object.keys(properties).length > 0
-        if !csv?
-          csv = Object.keys(properties).join(',') + '\n'
-    
-        csv += Object.keys(properties).map((key) ->
-          properties[key]
-        ).join(',') + '\n'
-    
-        console.log JSON.stringify(properties)
+      process.urlResults[url] = properties
       
-      if Object.keys(process.urlsInProgress).length is 0 and Object.keys(process.urlsToProcess).length is 0
-        file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"
-        fs.writeFile(file, csv, (err) ->
-          if err?
-            console.log err
-            console.log "Done, but couldn't save CSV. Here's the data we were trying to save:"
-            console.log csv
-            process.exit(1)
-          else
-            console.log "All done. The results were saved into #{file}."
-            process.exit(0)
-        )
+      if Object.keys(process.urlsToProcess).length is 0 and Object.keys(process.urlsInProgress).length is 0
+        saveAsCSV()
     )
+
+saveAsCSV = ->
+  for properties in Object.keys(process.urlResults)
+    if Object.keys(process.urlResults[properties]).length > 0
+      if !csv?
+        csv = Object.keys(process.urlResults[properties]).join(',') + '\n'
+
+      csv += Object.keys(process.urlResults[properties]).map((key) ->
+        process.urlResults[properties][key]
+      ).join(',') + '\n'
+  
+  file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"
+  fs.writeFile(file, csv, (err) ->
+    if err?
+      console.log err
+      console.log "Done, but couldn't save CSV. Here's the data we were trying to save:"
+      console.log csv
+      process.exit(1)
+    else
+      console.log "All done. The results were saved into #{file}."
+      process.exit(0)
+  )

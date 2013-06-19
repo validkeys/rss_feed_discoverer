@@ -16,7 +16,8 @@ module.exports = ->
         followRedirect: true
         headers: [
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36'
-        ]
+        ],
+        timeout: 30000
       }
     
       console.log "GET #{url} [page or feed]"
@@ -54,7 +55,9 @@ module.exports = ->
     parsedURL = URL.parse(url)
     
     blockedDomains = [
-      "feedly.com"
+      "feedly.com",
+      "feedreader.com",
+      "icopyright.net"
     ]
     
     blockedKeywords = [

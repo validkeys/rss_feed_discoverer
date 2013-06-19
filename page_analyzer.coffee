@@ -61,8 +61,7 @@ module.exports = class PageAnalyzer
       "a:contains('Blog')",
       "a:contains('Feed')",
       "a:contains('RSS')",
-      "a:contains('XML')",
-      "a:contains('News')"
+      "a:contains('XML')"
 
       # Catches all FeedBurner URLs in addition to pages containing links to feeds.
       # I've seen FeedBurner use these domains:

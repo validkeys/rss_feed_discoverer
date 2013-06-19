@@ -46,10 +46,12 @@ module.exports = class FeedAnalyzer
   
   pixelCount: (images, done) ->
     results = []
-    
     # if there are no images return a pixel count of zero immediately
     if images.length is 0
       done(0)
+    
+    # copy images array
+    imagesRemaining = images.concat([])
     
     pushResult = (pixelCount) ->
       results.push pixelCount
@@ -60,21 +62,36 @@ module.exports = class FeedAnalyzer
         , 0
         done(totalPixelCount)
     
-    for image in images
-      console.log "GET #{image.attribs.src} [image size]"
-      request({
-        uri: image.attribs.src
-        encoding: null
-      }, (e, r, data) =>
-        try
-          info = imageInfo(data)
-          imageSize = (info.width || 1) * (info.height || 1)
-          pushResult imageSize
+    processImage = (image) ->
+      imageURL = image.attribs.src || image.attribs.url
+      if imageURL?
+        console.log "GET #{imageURL} [image size]"
+        
+        request({
+          uri: imageURL
+          encoding: null
+        }, (e, r, data) =>
+          try
+            if e?
+              console.log "REQUEST ERROR: #{e}"
+              pushResult 0
+            else
+              info = imageInfo(data)
+              imageSize = (info.width || 1) * (info.height || 1)
+              pushResult imageSize
           
-        catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
-          console.log "EXCEPTION: " + e
-          pushResult 0
-      )
+          catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
+            console.log "EXCEPTION: " + e
+            pushResult 0
+        
+          processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
+        )
+      else
+        pushResult 0
+        processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
+    
+    processImage(imagesRemaining.pop()) if imagesRemaining.length > 0
+
   
   embedsOf: ($, domain) ->
     return @findElementsInContent($, "iframe[src*='" + domain + "'], embed[src*='" + domain + "'], script[src*='" + domain + "']")

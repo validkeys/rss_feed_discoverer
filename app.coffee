@@ -3,7 +3,7 @@ fs = require('fs')
 dispatcher = require('./link_dispatcher')()
 
 # Simultaneous request limit for pages and feeds.
-# Currently, all image requests for a feed are fired at once (TODO).
+# At most one image request will occur per feed at once.
 SIMULTANEOUS_PAGE_REQUEST_LIMIT = 5
 
 # Limit the number of pages we'll pass through before stopping (on each path).

@@ -5,7 +5,11 @@ module.exports = ->
     # Attempt to tidy up the URL to normalize if it appears to not be a full URI
     if urlToNormalize?
       if urlToNormalize.indexOf("http:") isnt 0 and urlToNormalize.indexOf("https:") isnt 0 and urlToNormalize.indexOf("data:") isnt 0
-        if urlToNormalize[0] is "/" and urlToNormalize[1] isnt "/"
+        # Handle feed: and feed:// links.
+        if urlToNormalize.indexOf("feed:") is 0
+          result = "http://" + urlToNormalize.substring(6)
+          result = result.replace("http:////", "http://")
+        else if urlToNormalize[0] is "/" and urlToNormalize[1] isnt "/"
           # absolute on server
           result = @pruneURLToBase(siteURL) + urlToNormalize
         else if urlToNormalize[0] is "/" and urlToNormalize[1] is "/"

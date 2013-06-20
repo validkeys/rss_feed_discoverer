@@ -9,6 +9,8 @@ module.exports = ->
         if urlToNormalize.indexOf("feed:") is 0
           result = "http://" + urlToNormalize.substring(6)
           result = result.replace("http:////", "http://")
+        else if urlToNormalize.indexOf("javascript:") is 0
+          result = "" # inline JS - not a URL. Let's ignore it.
         else if urlToNormalize[0] is "/" and urlToNormalize[1] isnt "/"
           # absolute on server
           result = @pruneURLToBase(siteURL) + urlToNormalize

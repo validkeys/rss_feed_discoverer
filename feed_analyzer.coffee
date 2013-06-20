@@ -75,10 +75,30 @@ module.exports = class FeedAnalyzer
         vineEmbeds: @embedsOf($, 'vine.co').length > 0,
         atomOrRSS: @atomOrRSS($),
         firstDate: @date($, false),
-        lastDate: @date($, true),
+        lastDate: @date($, true)
       }
     
+      properties.score = @scoreFor($, properties)
+    
       callback(properties)
+  
+  scoreFor: ($, properties) ->
+    score = 0
+
+    score += properties.numberOfItems
+    score += 5 * properties.imageCount if properties.imageCount < 10 * properties.numberOfItems
+    score += (properties.pixelCount * 0.0025)
+    score += 10 * (properties.youTubeEmbeds + properties.vimeoEmbeds)
+    score *= 1.5 if properties.fullFeed
+    score *= 2.0 if properties.averageCharsPerItem > 2000
+    score *= 1.15 if properties.averageImageDimension > 250
+    score *= 1.5 if properties.depth < 2 
+    
+    score *= 0.85 if !properties.hasDates
+    score *= 0.5 if properties.imageCount < (0.25 * properties.numberOfItems)
+    score *= 0.25 if properties.numberOfItems < 5
+    score *= 0.85 if properties.imageCount > 15 * properties.numberOfItems
+    score
   
   averageCharsPerItem: ($) ->
     contentNodes = @contentNodesOf $

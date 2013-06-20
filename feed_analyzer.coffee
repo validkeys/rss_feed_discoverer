@@ -36,49 +36,55 @@ module.exports = class FeedAnalyzer
   
   process: (callback) ->
     console.log "--> Processing feed: #{@url}"
-    $ = cheerio.load(@xml, {xmlMode: true})
+
+    if @response.statusCode >= 400
+      # Request resulted in an error page - don't try to process this.
+      console.log "#{@response.statusCode}: #{@url}"
+      callback({})
+    else
+      $ = cheerio.load(@xml, {xmlMode: true})
     
-    averageCharsPerItem = @averageCharsPerItem $
-    title = @titleOf($)
-    images = @getImagesOf $
+      averageCharsPerItem = @averageCharsPerItem $
+      title = @titleOf($)
+      images = @getImagesOf $
     
-    # Stop if this RSS feed has a blacklisted title.
-    blockedTitles = [
-      "comments"
-    ]
+      # Stop if this RSS feed has a blacklisted title.
+      blockedTitles = [
+        "comments"
+      ]
     
-    for blockedTitle in blockedTitles
-      if title.toLowerCase().indexOf(blockedTitle) isnt -1
-        callback({})
-        return
+      for blockedTitle in blockedTitles
+        if title.toLowerCase().indexOf(blockedTitle) isnt -1
+          callback({})
+          return
     
-    # Process images.
-    @pixelCount images, (totalPixelCount) =>
-      averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
+      # Process images.
+      @pixelCount images, (totalPixelCount) =>
+        averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
       
-      if isNaN(averageImageDimension)
-        averageImageDimension = 0
+        if isNaN(averageImageDimension)
+          averageImageDimension = 0
       
-      # Figure out the rest of the properties.
-      properties = {
-        url: @url,
-        title: title,
-        numberOfItems: @itemNodesOf($).length,
-        averageCharsPerItem: averageCharsPerItem,
-        fullFeed: (averageCharsPerItem > 500),
-        imageCount: images.length,
-        pixelCount: totalPixelCount,
-        averageImageSize: averageImageDimension,
-        hasDates: @pubDatesOf($).length > 0,
-        youTubeEmbeds: @embedsOf($, 'youtube.com').length > 0,
-        vimeoEmbeds: @embedsOf($, 'vimeo.com').length > 0,
-        vineEmbeds: @embedsOf($, 'vine.co').length > 0,
-        atomOrRSS: @atomOrRSS($),
-        firstDate: @date($, false),
-        lastDate: @date($, true),
-      }
+        # Figure out the rest of the properties.
+        properties = {
+          url: @url,
+          title: title,
+          numberOfItems: @itemNodesOf($).length,
+          averageCharsPerItem: averageCharsPerItem,
+          fullFeed: (averageCharsPerItem > 500),
+          imageCount: images.length,
+          pixelCount: totalPixelCount,
+          averageImageSize: averageImageDimension,
+          hasDates: @pubDatesOf($).length > 0,
+          youTubeEmbeds: @embedsOf($, 'youtube.com').length > 0,
+          vimeoEmbeds: @embedsOf($, 'vimeo.com').length > 0,
+          vineEmbeds: @embedsOf($, 'vine.co').length > 0,
+          atomOrRSS: @atomOrRSS($),
+          firstDate: @date($, false),
+          lastDate: @date($, true),
+        }
     
-      callback(properties)
+        callback(properties)
   
   averageCharsPerItem: ($) ->
     contentNodes = @contentNodesOf $

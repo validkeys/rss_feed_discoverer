@@ -38,13 +38,14 @@ module.exports = ->
   
   # Guesses whether this document is an RSS/Atom feed or not.
   isXML: (url, res, data) ->
+    data = data.toLowerCase()
     $ = cheerio.load(data, {xmlMode: true})
     
     if res.headers['Content-Type'] is "text/xml" then yes
     else if res.headers['Content-Type'] is "application/rss+xml" then yes
     else if $("rss").length > 0 then yes
     else if $("feed").length > 0 then yes
-    else if data? and 0 <= data.indexOf("<?xml") <= 10 then yes
+    else if data? and 0 <= data.indexOf("<?xml") <= 10 and data.indexOf("doctype") is -1 and data.indexOf("xhtml") is -1 then yes
     else if url.substring(url.length - 4) is ".xml" then yes
     else if url.substring(url.length - 4) is ".rss" then yes
     else if url.substring(url.length - 5) is ".atom" then yes

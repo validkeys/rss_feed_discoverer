@@ -39,17 +39,30 @@ module.exports = class FeedAnalyzer
     $ = cheerio.load(@xml, {xmlMode: true})
     
     averageCharsPerItem = @averageCharsPerItem $
+    title = @titleOf($)
     images = @getImagesOf $
     
+    # Stop if this RSS feed has a blacklisted title.
+    blockedTitles = [
+      "comments"
+    ]
+    
+    for blockedTitle in blockedTitles
+      if title.toLowerCase().indexOf(blockedTitle) isnt -1
+        callback({})
+        return
+    
+    # Process images.
     @pixelCount images, (totalPixelCount) =>
       averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
       
       if isNaN(averageImageDimension)
         averageImageDimension = 0
-        
+      
+      # Figure out the rest of the properties.
       properties = {
         url: @url,
-        title: @titleOf($),
+        title: title,
         numberOfItems: @itemNodesOf($).length,
         averageCharsPerItem: averageCharsPerItem,
         fullFeed: (averageCharsPerItem > 500),

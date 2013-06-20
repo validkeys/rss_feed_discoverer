@@ -68,10 +68,10 @@ module.exports = ->
     ]
     
     for domain in blockedDomains
-      if parsedURL.hostname? and parsedURL.hostname.indexOf(domain) isnt -1
+      if parsedURL.hostname? and parsedURL.hostname.toLowerCase().indexOf(domain) isnt -1
         return true
     
     for keyword in blockedKeywords
-      return true if url.indexOf(keyword) isnt -1
+      return true if url.toLowerCase().indexOf(keyword) isnt -1
   
     false

@@ -1,4 +1,3 @@
-http = require('follow-redirects').http
 exec = require('child_process').exec
 fs = require('fs')
 dispatcher = require('./link_dispatcher')()
@@ -69,12 +68,12 @@ processNextURL = ->
     url = urls[0]
     process.urlsInProgress[url] = { depth: process.urlsToProcess[url].depth }
     delete process.urlsToProcess[url]
-  
+
     dispatcher.get(url, process.urlsInProgress[url].depth, (properties) =>
       process.urlResults[url] = properties
       process.urlResults[url].depth = process.urlsInProgress[url].depth
       delete process.urlsInProgress[url]
-      
+    
       try
         processNextURL()
       catch e
@@ -85,7 +84,7 @@ processNextURL = ->
         console.log "Error encountered: #{e}"
         console.log "This might be unrecoverable, so we're just going to call it quits and attempt to save the csv."
         shouldSave = true
-      
+    
       if shouldSave? or (Object.keys(process.urlsToProcess).length is 0 and Object.keys(process.urlsInProgress).length is 0 and not process.saving?)
         saveAsCSV()
     )

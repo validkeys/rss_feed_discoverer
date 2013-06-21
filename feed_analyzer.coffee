@@ -49,52 +49,57 @@ module.exports = class FeedAnalyzer
       minCharsPerItem = Math.min.apply(Math, charsPerItem)
       maxCharsPerItem = Math.max.apply(Math, charsPerItem)
       
-      title = @titleOf $
-      images = @getImagesOf $
+      # Bad assumption - this wasn't a feed.
+      if isNaN(averageCharsPerItem)
+        callback({})
+        return
+      else
+        title = @titleOf $
+        images = @getImagesOf $
     
-      # Stop if this RSS feed has a blacklisted title.
-      blockedTitles = [
-        "comments"
-      ]
+        # Stop if this RSS feed has a blacklisted title.
+        blockedTitles = [
+          "comments"
+        ]
     
-      for blockedTitle in blockedTitles
-        if title.toLowerCase().indexOf(blockedTitle) isnt -1
-          callback({})
-          return
+        for blockedTitle in blockedTitles
+          if title.toLowerCase().indexOf(blockedTitle) isnt -1
+            callback({})
+            return
     
-      # Process images.
-      @pixelCount images, (totalPixelCount) =>
-        averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
+        # Process images.
+        @pixelCount images, (totalPixelCount) =>
+          averageImageDimension = Math.round(Math.sqrt(totalPixelCount / images.length))
       
-        if isNaN(averageImageDimension)
-          averageImageDimension = 0
+          if isNaN(averageImageDimension)
+            averageImageDimension = 0
       
-        # Figure out the rest of the properties.
-        properties = {
-          "URL": @url,
-          "Title": title,
-          "# of Items": @itemNodesOf($).length,
-          "Average characters per item": averageCharsPerItem,
-          "Minimum characters per item": minCharsPerItem,
-          "Maximum characters per item": maxCharsPerItem,
-          "Max difference in characters": maxCharsPerItem - minCharsPerItem,
-          "Full Feed": (averageCharsPerItem > 500),
-          "Image Count": images.length,
-          "Pixel Count": totalPixelCount,
-          "Average Image Size": averageImageDimension,
-          "Item dates": @pubDatesOf($).length,
-          "Item authors": $("author, creator").length,
-          "YouTube embeds": @embedsOf($, 'youtube.com').length,
-          "Vimeo embeds": @embedsOf($, 'vimeo.com').length,
-          "Vine embeds": @embedsOf($, 'vine.co').length,
-          "Atom or RSS": @atomOrRSS($),
-          "Date of first item": @date($, false),
-          "Date of last item": @date($, true)
-        }
+          # Figure out the rest of the properties.
+          properties = {
+            "URL": @url,
+            "Title": title,
+            "# of Items": @itemNodesOf($).length,
+            "Average characters per item": averageCharsPerItem,
+            "Minimum characters per item": minCharsPerItem,
+            "Maximum characters per item": maxCharsPerItem,
+            "Max difference in characters": maxCharsPerItem - minCharsPerItem,
+            "Full Feed": (averageCharsPerItem > 500),
+            "Image Count": images.length,
+            "Pixel Count": totalPixelCount,
+            "Average Image Size": averageImageDimension,
+            "Item dates": @pubDatesOf($).length,
+            "Item authors": $("author, creator").length,
+            "YouTube embeds": @embedsOf($, 'youtube.com').length,
+            "Vimeo embeds": @embedsOf($, 'vimeo.com').length,
+            "Vine embeds": @embedsOf($, 'vine.co').length,
+            "Atom or RSS": @atomOrRSS($),
+            "Date of first item": @date($, false),
+            "Date of last item": @date($, true)
+          }
         
-        properties["Score [100 = best]"] = @estimateHealth(properties)
+          properties["Score [100 = best]"] = @estimateHealth(properties)
     
-        callback(properties)
+          callback(properties)
   
   estimateHealth: (properties) ->
     score = 100

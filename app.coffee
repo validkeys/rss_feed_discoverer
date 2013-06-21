@@ -1,6 +1,6 @@
 exec = require('child_process').exec
 fs = require('fs')
-dispatcher = require('./link_dispatcher')()
+LinkDispatcher = require('./link_dispatcher')
 opts = require('nomnom').options({
   open: {
     abbr: 'o',
@@ -46,14 +46,15 @@ if filename?
   fs.readFile(filename, 'utf8', (err, data) ->
     csv = null
     
-    # DIRTY HACK: use globals to keep track of progress of URL processing
     urls = data.split('\n')
-    process.urlsToProcess = {}
-    process.urlsInProgress = {}
-    process.urlResults = {}
+    @urlsToProcess = {}
+    @urlsInProgress = {}
+    @urlResults = {}
     
     for url in urls
-      process.urlsToProcess[url] = { depth: 0 }
+      @urlsToProcess[url] = { depth: 0 }
+      
+    @dispatcher = new LinkDispatcher(@urlsToProcess, @urlsInProgress, @urlResults)
     
     for i in [1..SIMULTANEOUS_PAGE_REQUEST_LIMIT]
       processNextURL()
@@ -63,16 +64,16 @@ else
   process.exit(2)
   
 processNextURL = ->
-  urls = Object.keys(process.urlsToProcess)
+  urls = Object.keys(@urlsToProcess)
   if urls.length > 0
     url = urls[0]
-    process.urlsInProgress[url] = { depth: process.urlsToProcess[url].depth }
-    delete process.urlsToProcess[url]
-
-    dispatcher.get(url, process.urlsInProgress[url].depth, (properties) =>
-      process.urlResults[url] = properties
-      process.urlResults[url].depth = process.urlsInProgress[url].depth
-      delete process.urlsInProgress[url]
+    @urlsInProgress[url] = { depth: @urlsToProcess[url].depth }
+    delete @urlsToProcess[url]
+    
+    @dispatcher.get(url, @urlsInProgress[url].depth, (properties) =>
+      @urlResults[url] = properties
+      @urlResults[url].depth = @urlsInProgress[url].depth
+      delete @urlsInProgress[url]
     
       try
         processNextURL()
@@ -85,23 +86,23 @@ processNextURL = ->
         console.log "This might be unrecoverable, so we're just going to call it quits and attempt to save the csv."
         shouldSave = true
     
-      if shouldSave? or (Object.keys(process.urlsToProcess).length is 0 and Object.keys(process.urlsInProgress).length is 0 and not process.saving?)
+      if shouldSave? or (Object.keys(@urlsToProcess).length is 0 and Object.keys(@urlsInProgress).length is 0 and not process.saving?)
         saveAsCSV()
     )
 
 saveAsCSV = ->
   process.saving = true
 
-  for properties in Object.keys(process.urlResults)
-    if Object.keys(process.urlResults[properties]).length > 1
+  for properties in Object.keys(@urlResults)
+    if Object.keys(@urlResults[properties]).length > 1
       if !csv?
-        csv = Object.keys(process.urlResults[properties]).join(',') + '\n'
+        csv = Object.keys(@urlResults[properties]).join(',') + '\n'
 
-      csv += Object.keys(process.urlResults[properties]).map((key) ->
-        if typeof process.urlResults[properties][key] is "string"
-          process.urlResults[properties][key].replace(/[,\n]/g, " ")
+      csv += Object.keys(@urlResults[properties]).map((key) ->
+        if typeof @urlResults[properties][key] is "string"
+          @urlResults[properties][key].replace(/[,\n]/g, " ")
         else
-          process.urlResults[properties][key]
+          @urlResults[properties][key]
       ).join(',') + '\n'
   
   file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"

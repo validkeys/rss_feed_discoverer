@@ -5,7 +5,12 @@ URL = require('url')
 FeedAnalyzer = require("./feed_analyzer")
 PageAnalyzer = require("./page_analyzer")
 
-module.exports = ->
+module.exports = class LinkDispatcher
+  constructor: (urlsToProcess, urlsInProgress, urlResults) ->
+    @urlsToProcess = urlsToProcess
+    @urlsInProgress = urlsInProgress
+    @urlResults = urlResults
+    
   get: (url, depth, callback) ->
     url = url.trim()
     if url.length > 0 and depth <= process.MAX_DEPTH and not @blocked(url)
@@ -30,7 +35,7 @@ module.exports = ->
           if xml
             new FeedAnalyzer(url, depth, response, data).process(callback)
           else
-            new PageAnalyzer(url, depth, response, data).process(callback)
+            new PageAnalyzer(url, depth, response, data, @urlsToProcess, @urlsInProgress, @urlResults).process(callback)
       )
     else
       callback({})

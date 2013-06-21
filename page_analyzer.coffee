@@ -3,11 +3,14 @@ URL = require('url')
 urlNormalizer = require('./url_normalizer')()
 
 module.exports = class PageAnalyzer
-  constructor: (url, depth, response, html) ->
+  constructor: (url, depth, response, html, urlsToProcess, urlsInProgress, urlResults) ->
     @url = url
     @depth = depth
     @response = response
     @html = html
+    @urlsToProcess = urlsToProcess
+    @urlsInProgress = urlsInProgress
+    @urlResults = urlResults
     
   process: (callback) ->
     console.log "--> Processing HTML: #{@url}"
@@ -77,13 +80,10 @@ module.exports = class PageAnalyzer
     $(selectors).filter((i, el) -> return i < 75).each (index, element) =>
       @processURL(urlNormalizer.getNormalizedURL(@url, element.attribs.href))
   
-  
-  
-  # Yuck. I'm just going to leave this atrocity at the very bottom of this file.
   processURL: (urlToProcess) ->
-    console.log "urls to process = #{Object.keys(process.urlsToProcess).length}, in progress = #{Object.keys(process.urlsInProgress).length}"
-    if process.urlResults[urlToProcess]? or process.urlsInProgress[urlToProcess]?
+    console.log "urls to process = #{Object.keys(@urlsToProcess).length}, in progress = #{Object.keys(@urlsInProgress).length}"
+    if @urlResults[urlToProcess]? or @urlsInProgress[urlToProcess]?
       console.log "Skipped (already processed or in queue): #{urlToProcess}"
     else
       console.log("Queued: #{urlToProcess} with depth #{@depth + 1}.")
-      process.urlsToProcess[urlToProcess] = { depth: @depth + 1 }
+      @urlsToProcess[urlToProcess] = { depth: @depth + 1 }

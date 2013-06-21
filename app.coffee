@@ -78,18 +78,9 @@ processNextURL = ->
       @urlResults[url].depth = @urlsInProgress[url].depth
       delete @urlsInProgress[url]
     
-      try
-        processNextURL()
-      catch e
-        # Sometimes we run into a RangeError if our call stack size is not large enough.
-        # To get around this, be sure to specify a larger call stack size when invoking Node.
-        # See README.md for details.
-        # TODO - I don't recall if this actually catches anything. The error that occurs seems to be uncatchable.
-        console.log "Error encountered: #{e}"
-        console.log "This might be unrecoverable, so we're just going to call it quits and attempt to save the csv."
-        shouldSave = true
+      processNextURL()
     
-      if shouldSave? or (Object.keys(@urlsToProcess).length is 0 and Object.keys(@urlsInProgress).length is 0 and not process.saving?)
+      if Object.keys(@urlsToProcess).length is 0 and Object.keys(@urlsInProgress).length is 0 and not process.saving?
         saveAsCSV()
     )
 

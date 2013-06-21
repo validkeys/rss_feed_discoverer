@@ -20,7 +20,7 @@ module.exports = class PageAnalyzer
     else
       # Ignore this page if we've hit our max depth.
       # When depth == MAX_DEPTH, we only care about processing feeds.
-      if @depth <= process.MAX_DEPTH
+      if @depth < process.MAX_DEPTH
         @checkForLinkTag $
         @queueCommonFeedURLs()
         @queuePotentialFeedLinks $
@@ -68,9 +68,8 @@ module.exports = class PageAnalyzer
       #   feeds.feedburner.com
       #   feeds2.feedburner.com
       #   feedproxy.google.com
-      "a[href*='feed']",
+      "a[href*='feed']"
     ].join(', ')
-    
     
     # Insane limit: make sure we only queue up at most 75 links per page.
     # It'd be nice if this could be lower, but a lot of sites have a whole page

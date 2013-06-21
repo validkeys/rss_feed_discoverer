@@ -45,6 +45,10 @@ module.exports = class FeedAnalyzer
       $ = cheerio.load(@xml, {xmlMode: true})
     
       averageCharsPerItem = @averageCharsPerItem $
+      charsPerItem = @charsPerItem $
+      minCharsPerItem = Math.min.apply(Math, charsPerItem)
+      maxCharsPerItem = Math.max.apply(Math, charsPerItem)
+      
       title = @titleOf($)
       images = @getImagesOf $
     
@@ -71,6 +75,9 @@ module.exports = class FeedAnalyzer
           title: title,
           numberOfItems: @itemNodesOf($).length,
           averageCharsPerItem: averageCharsPerItem,
+          minCharsPerItem: minCharsPerItem,
+          maxCharsPerItem: maxCharsPerItem,
+          maxDiffInCharsPerItem: maxCharsPerItem - minCharsPerItem,
           fullFeed: (averageCharsPerItem > 500),
           imageCount: images.length,
           pixelCount: totalPixelCount,
@@ -89,6 +96,15 @@ module.exports = class FeedAnalyzer
   averageCharsPerItem: ($) ->
     contentNodes = @contentNodesOf $
     Math.round(contentNodes.text().length / contentNodes.length)
+  
+  charsPerItem: ($) ->
+    results = []
+    contentNodes = @contentNodesOf $
+    contentNodes.each (i, node) ->
+      results.push $(node).text().length
+    
+    console.log JSON.stringify(results)
+    results
   
   pixelCount: (images, done) ->
     results = []
@@ -195,7 +211,7 @@ module.exports = class FeedAnalyzer
     return $("item, entry")
 
   contentNodesOf: ($) ->
-    return $("encoded, summary, description, content")
+    return $("encoded, summary, item > description, entry > description, content")
   
   pubDatesOf: ($) ->
     return $("pubDate, published, updated")  

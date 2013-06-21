@@ -1,7 +1,6 @@
 request = require('request')
 cheerio = require('cheerio')
 URL = require('url')
-# TODO - handle https links properly too
 
 FeedAnalyzer = require("./feed_analyzer")
 PageAnalyzer = require("./page_analyzer")

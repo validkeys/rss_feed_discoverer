@@ -23,7 +23,8 @@ opts = require('nomnom').options({
     default: 3,
     help: 'Set how deep of a chain (maximum) we follow before giving up.'
   }
-}).nom();
+}).nom()
+
 
 opts.images = true if !opts.images?
 
@@ -63,6 +64,8 @@ else
   console.log "ERROR: please provide a file to read URLs from."
   process.exit(2)
   
+
+
 processNextURL = ->
   urls = Object.keys(@urlsToProcess)
   if urls.length > 0
@@ -108,6 +111,8 @@ saveAsCSV = ->
   file = "./results/rss_scrape_results_#{new Date().getTime()}.csv"
   fs.writeFile(file, csv, (err) ->
     if err?
+      # Write failed, but we've done all our processing so we'll output the CSV data to STDOUT
+      # (so we don't have to start over)
       console.log err
       console.log "Done, but couldn't save CSV. Here's the data we were trying to save:"
       console.log csv

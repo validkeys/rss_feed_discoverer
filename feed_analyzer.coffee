@@ -24,7 +24,7 @@ opts = require('nomnom').options({
     abbr: 'd',
     default: 3,
     help: 'Set how deep of a chain (maximum) we follow before giving up.'}
-}).nom();
+}).nom()
 
 
 module.exports = class FeedAnalyzer
@@ -49,8 +49,8 @@ module.exports = class FeedAnalyzer
       minCharsPerItem = Math.min.apply(Math, charsPerItem)
       maxCharsPerItem = Math.max.apply(Math, charsPerItem)
       
-      # Bad assumption - this wasn't a feed.
       if isNaN(averageCharsPerItem)
+        # Bad assumption - this wasn't a feed.
         callback({})
         return
       else
@@ -59,7 +59,7 @@ module.exports = class FeedAnalyzer
     
         # Stop if this RSS feed has a blacklisted title.
         blockedTitles = [
-          "comments"
+          "comments" # WP offers a RSS feed for each article (its comments).
         ]
     
         for blockedTitle in blockedTitles
@@ -146,11 +146,11 @@ module.exports = class FeedAnalyzer
   
   pixelCount: (images, done) ->
     results = []
-    # if there are no images return a pixel count of zero immediately
+    # If there are no images return a pixel count of zero immediately.
     if images.length is 0 or opts['images'] is false
       done(0)
     else
-      # copy images array
+      # Copy images array.
       imagesRemaining = images.concat([])
     
       pushResult = (pixelCount) ->
@@ -180,7 +180,8 @@ module.exports = class FeedAnalyzer
                 imageSize = (info.width || 1) * (info.height || 1)
                 pushResult imageSize
           
-            catch e # tried looking up info for something that wasn't an image (or something else crazy happened)
+            catch e 
+              # We tried looking up info for something that wasn't an image (or something else crazy happened)
               console.log "EXCEPTION: " + e
               pushResult 0
         
@@ -252,7 +253,7 @@ module.exports = class FeedAnalyzer
     return $("encoded, summary, item > description, entry > description, content")
   
   pubDatesOf: ($) ->
-    return $("pubDate, published, updated")  
+    return $("pubDate, published, updated")
   
   atomOrRSS: ($) ->
     if $("rss") then "RSS"

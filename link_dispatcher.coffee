@@ -40,7 +40,7 @@ module.exports = class LinkDispatcher
     else
       callback({})
   
-  # Guesses whether this document is an RSS/Atom feed or not.
+  # Guess whether this document is an RSS/Atom feed or not.
   isXML: (url, res, data) ->
     data = data.toLowerCase()
     $ = cheerio.load(data, {xmlMode: true})

@@ -19,7 +19,7 @@ module.exports = ->
           result = "http:" + urlToNormalize
         else
           # relative to nearest "path". Chop off "blah.html" if we're at /blah.html, or "ccc" if we're at /aaa/ccc
-          result = @pruneURLToNearestPath(siteURL) + "/" + urlToNormalize;
+          result = @pruneURLToNearestPath(siteURL) + "/" + urlToNormalize
     result
 
   pruneURLToBase: (url) ->

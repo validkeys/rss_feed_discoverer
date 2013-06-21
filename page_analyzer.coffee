@@ -17,8 +17,8 @@ module.exports = class PageAnalyzer
 
     $ = cheerio.load(@html)
     
-    # Bad URL. Do not proceed.
     if @response.statusCode >= 400
+      # Bad URL. Do not proceed.
       callback({})
     else
       # Ignore this page if we've hit our max depth.
@@ -31,7 +31,7 @@ module.exports = class PageAnalyzer
       callback({})
   
   # Checks for the RSS HTML tag, like many web browsers do.
-  # This is a VERY reliable signal.
+  # This is a VERY reliable signal that the link is a feed (may not be a good one, though).
   checkForLinkTag: ($) ->
     tags = $("link[rel='alternate'][type='application/rss+xml'], link[rel='alternate'][type='application/atom+xml']")
     

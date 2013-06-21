@@ -49,7 +49,7 @@ module.exports = class FeedAnalyzer
       minCharsPerItem = Math.min.apply(Math, charsPerItem)
       maxCharsPerItem = Math.max.apply(Math, charsPerItem)
       
-      title = @titleOf($)
+      title = @titleOf $
       images = @getImagesOf $
     
       # Stop if this RSS feed has a blacklisted title.
@@ -82,16 +82,50 @@ module.exports = class FeedAnalyzer
           "Image Count": images.length,
           "Pixel Count": totalPixelCount,
           "Average Image Size": averageImageDimension,
-          "Has dates": @pubDatesOf($).length > 0,
-          "YouTube embeds": @embedsOf($, 'youtube.com').length > 0,
-          "Vimeo embeds": @embedsOf($, 'vimeo.com').length > 0,
-          "Vine embeds": @embedsOf($, 'vine.co').length > 0,
+          "Item dates": @pubDatesOf($).length,
+          "Item authors": $("author, creator").length,
+          "YouTube embeds": @embedsOf($, 'youtube.com').length,
+          "Vimeo embeds": @embedsOf($, 'vimeo.com').length,
+          "Vine embeds": @embedsOf($, 'vine.co').length,
           "Atom or RSS": @atomOrRSS($),
           "Date of first item": @date($, false),
-          "Date of last item": @date($, true),
+          "Date of last item": @date($, true)
         }
+        
+        properties["Score [100 = best]"] = @estimateHealth(properties)
     
         callback(properties)
+  
+  estimateHealth: (properties) ->
+    score = 100
+    
+    # Ensure these properties are present and not zero.
+    propertiesWithPresenceRequired = [
+      "URL",
+      "Title",
+      "Atom or RSS",
+      "# of Items", # > 0
+      "Minimum characters per item" # > 0
+    ]
+    
+    # If these properties are missing or zero, it's a deal breaker.
+    for property in propertiesWithPresenceRequired
+      score -= 100 if !properties[property]
+    
+    
+    # Ensure these properties have a value > the specified value.
+    propertiesWithGreaterRangeRequired = {
+      "Average characters per item": 500,
+      "Image Count": Math.max(properties["# of Items"] - 1, 0),
+      "Item dates": properties["# of Items"] - 1,
+      "Item authors": properties["# of Items"] - 1
+    }
+    
+    for property in Object.keys(propertiesWithGreaterRangeRequired)
+      if properties[property] <= propertiesWithGreaterRangeRequired[property]
+        score -= 25
+    
+    score
   
   averageCharsPerItem: ($) ->
     contentNodes = @contentNodesOf $
@@ -103,7 +137,6 @@ module.exports = class FeedAnalyzer
     contentNodes.each (i, node) ->
       results.push $(node).text().length
     
-    console.log JSON.stringify(results)
     results
   
   pixelCount: (images, done) ->
